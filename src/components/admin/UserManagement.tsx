@@ -200,7 +200,7 @@ const UserManagement: React.FC<UserManagementProps> = ({
                       <button
                         onClick={() => {
                           // This would open a modal to edit weigh-ins
-                          toast.success('Edit weigh-in feature coming soon!');
+                          console.log("Edit weigh-in feature coming soon!");
                         }}
                         className="text-primary-600 hover:text-primary-900"
                       >
