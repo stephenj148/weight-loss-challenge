@@ -227,11 +227,6 @@ const CompetitionManagement: React.FC<CompetitionManagementProps> = ({
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-export default CompetitionManagement;
 
       {/* Edit Competition Modal */}
       {editingCompetition && (
