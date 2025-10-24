@@ -124,15 +124,21 @@ export class CompetitionService {
 
   static async getAllUserStats(year: number): Promise<any[]> {
     try {
+      console.log(`Getting user stats for year: ${year}`);
       const participantsRef = collection(db, 'competitions', year.toString(), 'participants');
       const participantsSnapshot = await getDocs(participantsRef);
+      
+      console.log(`Found ${participantsSnapshot.docs.length} participants`);
       
       const userStats = [];
       
       for (const participantDoc of participantsSnapshot.docs) {
         const userId = participantDoc.id;
+        console.log(`Processing participant: ${userId}`);
         const weighInsRef = collection(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins');
         const weighInsSnapshot = await getDocs(weighInsRef);
+        
+        console.log(`Found ${weighInsSnapshot.docs.length} weigh-ins for user ${userId}`);
         
         const weighIns = weighInsSnapshot.docs.map(doc => ({
           id: doc.id,
@@ -145,7 +151,7 @@ export class CompetitionService {
           const totalLoss = firstWeight - lastWeight;
           const totalLossPercentage = (totalLoss / firstWeight) * 100;
           
-          userStats.push({
+          const userStat = {
             userId,
             displayName: participantDoc.data().displayName || 'Unknown User',
             startWeight: firstWeight,
@@ -157,10 +163,14 @@ export class CompetitionService {
             totalWeighIns: weighIns.length,
             lastWeighIn: (weighIns[weighIns.length - 1] as any)?.timestamp?.toDate(),
             weighIns: weighIns
-          });
+          };
+          
+          console.log(`Created user stat:`, userStat);
+          userStats.push(userStat);
         }
       }
       
+      console.log(`Returning ${userStats.length} user stats`);
       return userStats.sort((a, b) => b.totalWeightLoss - a.totalWeightLoss);
     } catch (error) {
       console.error('Error getting user stats:', error);

@@ -20,6 +20,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, on
 
   const loadUserStats = async () => {
     if (competitions.length === 0 || users.length === 0) {
+      console.log('Skipping user stats load - no competitions or users');
       setLoading(false);
       return;
     }
@@ -33,15 +34,30 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, on
       ) || competitions[0];
 
       if (!activeCompetition) {
+        console.log('No active competition found');
         setLoading(false);
         return;
       }
 
+      console.log(`Loading stats for competition ${activeCompetition.year} with ${users.length} users`);
       setSelectedCompetition(activeCompetition.year);
 
-      const stats = await CompetitionService.getAllUserStats(activeCompetition.year);
-      console.log('User stats loaded:', stats);
-      setAllStats(stats);
+      // Get stats for each user individually
+      const statsPromises = users.map(async (user) => {
+        console.log(`Getting stats for user: ${user.uid} (${user.displayName})`);
+        const userStats = await CompetitionService.getUserStats(activeCompetition.year, user.uid);
+        if (userStats) {
+          // Add the user's display name to the stats
+          userStats.displayName = user.displayName;
+        }
+        return userStats;
+      });
+
+      const allStats = await Promise.all(statsPromises);
+      const validStats = allStats.filter(stats => stats !== null);
+      
+      console.log('User stats loaded:', validStats);
+      setAllStats(validStats);
     } catch (error) {
       console.error('Error loading user stats:', error);
       toast.error('Failed to load user stats');
