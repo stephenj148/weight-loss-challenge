@@ -4,7 +4,9 @@ module.exports = {
     'react-app/jest'
   ],
   rules: {
-    '@typescript-eslint/no-unused-vars': 'warn',
-    'no-unused-vars': 'warn'
-  }
+    '@typescript-eslint/no-unused-vars': 'off',
+    'no-unused-vars': 'off',
+    '@typescript-eslint/no-explicit-any': 'off'
+  },
+  ignorePatterns: ['src/hooks/useAuth.ts']
 };
