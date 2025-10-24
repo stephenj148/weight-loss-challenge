@@ -33,6 +33,7 @@ const CompetitionStats: React.FC<CompetitionStatsProps> = ({ competitions }) => 
     try {
       setLoading(true);
       const stats = await CompetitionService.getAllUserStats(selectedCompetition.year);
+      console.log('Competition stats loaded:' stats);
       setAllStats(stats);
     } catch (error) {
       console.error('Error loading competition stats:', error);

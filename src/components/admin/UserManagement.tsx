@@ -43,6 +43,16 @@ const UserManagement: React.FC<UserManagementProps> = ({
 
       setSelectedCompetition(activeCompetition.year);
 
+      const stats = await CompetitionService.getAllUserStats(activeCompetition.year);
+      console.log('User stats loaded:' stats);
+      setAllStats(stats);
+    } catch (error) {
+      console.error('Error loading user stats:' error);
+      toast.error('Failed to load user stats');
+    } finally {
+      setLoading(false);
+    }
+
       // Load stats for all users
       const statsPromises = users.map(async (user) => {
         const stats = await CompetitionService.getUserStats(activeCompetition.year, user.uid);
