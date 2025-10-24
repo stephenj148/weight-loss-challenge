@@ -16,7 +16,6 @@ const RegisterPage: React.FC = () => {
     formState: { errors },
   } = useForm<RegisterFormData>();
 
-  const password = watch('password');
 
   const onSubmit = async (data: RegisterFormData) => {
     setIsLoading(true);
@@ -114,22 +113,6 @@ const RegisterPage: React.FC = () => {
             </div>
 
             <div className="form-group">
-              <label htmlFor="confirmPassword" className="form-label">
-                Confirm Password
-              </label>
-              <input
-                {...register('confirmPassword', {
-                  required: 'Please confirm your password',
-                  validate: (value) =>
-                    value === password || 'Passwords do not match',
-                })}
-                type="password"
-                className={errors.confirmPassword ? 'input-error' : 'input'}
-                placeholder="Confirm your password"
-              />
-              {errors.confirmPassword && (
-                <p className="form-error">{errors.confirmPassword.message}</p>
-              )}
             </div>
           </div>
 
