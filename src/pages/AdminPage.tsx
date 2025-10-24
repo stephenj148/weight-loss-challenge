@@ -25,9 +25,11 @@ const AdminPage: React.FC = () => {
   const loadAdminData = async () => {
     try {
       setLoading(true);
+      console.log('Loading admin data...');
       
       // Load competitions
       const competitionsData = await CompetitionService.getCompetitions();
+      console.log('Loaded competitions:', competitionsData);
       setCompetitions(competitionsData);
 
       // Load users (this would need to be implemented in AuthService)
@@ -36,8 +38,11 @@ const AdminPage: React.FC = () => {
         CompetitionService.isCompetitionActive(comp)
       );
       
+      console.log('Active competition:', activeCompetition);
+      
       if (activeCompetition) {
         const participants = await CompetitionService.getParticipants(activeCompetition.year);
+        console.log('Loaded participants:', participants);
         // Convert participants to user-like objects
         const userData = participants.map(p => ({
           uid: p.userId,
@@ -46,7 +51,11 @@ const AdminPage: React.FC = () => {
           role: 'regular' as UserRole,
           createdAt: p.joinedAt,
         }));
+        console.log('Converted user data:', userData);
         setUsers(userData);
+      } else {
+        console.log('No active competition found');
+        setUsers([]);
       }
     } catch (error) {
       console.error('Error loading admin data:', error);

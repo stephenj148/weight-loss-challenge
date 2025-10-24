@@ -10,6 +10,8 @@ interface UserManagementProps {
 }
 
 const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, onUserUpdate }) => {
+  console.log('UserManagement component loaded with:', { users: users.length, competitions: competitions.length });
+  
   const [selectedCompetition, setSelectedCompetition] = useState<number | null>(null);
   const [allStats, setAllStats] = useState<UserStats[]>([]);
   const [loading, setLoading] = useState(false);

@@ -8,6 +8,8 @@ interface CompetitionStatsProps {
 }
 
 const CompetitionStats: React.FC<CompetitionStatsProps> = ({ competitions }) => {
+  console.log('CompetitionStats component loaded with competitions:', competitions.length);
+  
   const [selectedCompetition, setSelectedCompetition] = useState<Competition | null>(null);
   const [allStats, setAllStats] = useState<UserStats[]>([]);
   const [loading, setLoading] = useState(false);

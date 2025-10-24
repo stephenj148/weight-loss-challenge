@@ -292,6 +292,8 @@ export class CompetitionService {
 
   static async submitWeighIn(year: number, userId: string, weekNumber: number, weight: number, notes?: string): Promise<void> {
     console.log(`Submitting weigh-in: year=${year}, userId=${userId}, week=${weekNumber}, weight=${weight}`);
+    
+    // Create the weigh-in document
     const weighInRef = doc(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins', weekNumber.toString());
     
     const weighInData = {
@@ -304,5 +306,19 @@ export class CompetitionService {
     console.log('Saving weigh-in data:', weighInData);
     await setDoc(weighInRef, weighInData);
     console.log('Weigh-in saved successfully!');
+    
+    // Also create/update the participant document
+    const participantRef = doc(db, 'competitions', year.toString(), 'participants', userId);
+    const participantData = {
+      userId,
+      name: 'Unknown User', // Will be updated with actual user data
+      joinedAt: serverTimestamp(),
+      lastWeighIn: serverTimestamp(),
+      totalWeighIns: 1, // This should be calculated properly
+    };
+    
+    console.log('Creating/updating participant document:', participantData);
+    await setDoc(participantRef, participantData, { merge: true });
+    console.log('Participant document saved successfully!');
   }
 }
