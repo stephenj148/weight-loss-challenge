@@ -198,7 +198,7 @@ const WeighInPage: React.FC = () => {
                   <div>
                     <p className="text-sm text-gray-600">Date</p>
                     <p className="text-lg font-semibold text-gray-900">
-                      {lastWeighIn.submittedAt ? new Date(lastWeighIn.submittedAt).toLocaleDateString() : 'N/A'}
+                      {lastWeighIn.timestamp ? new Date(lastWeighIn.timestamp).toLocaleDateString() : 'N/A'}
                     </p>
                   </div>
                 </div>
