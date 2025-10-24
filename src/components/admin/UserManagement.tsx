@@ -9,14 +9,10 @@ interface UserManagementProps {
   onUserUpdate: () => void;
 }
 
-const UserManagement: React.FC<UserManagementProps> = ({
-  users,
-  competitions,
-  onUserUpdate,
-}) => {
-  const [userStats, setUserStats] = useState<{ [userId: string]: UserStats }>({});
-  const [loading, setLoading] = useState(true);
+const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, onUserUpdate }) => {
   const [selectedCompetition, setSelectedCompetition] = useState<number | null>(null);
+  const [allStats, setAllStats] = useState<UserStats[]>([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     loadUserStats();
@@ -44,50 +40,21 @@ const UserManagement: React.FC<UserManagementProps> = ({
       setSelectedCompetition(activeCompetition.year);
 
       const stats = await CompetitionService.getAllUserStats(activeCompetition.year);
-      console.log('User stats loaded:' stats);
+      console.log('User stats loaded:', stats);
       setAllStats(stats);
     } catch (error) {
-      console.error('Error loading user stats:' error);
-      toast.error('Failed to load user stats');
-    } finally {
-      setLoading(false);
-    }
-
-      // Load stats for all users
-      const statsPromises = users.map(async (user) => {
-        const stats = await CompetitionService.getUserStats(activeCompetition.year, user.uid);
-        return { userId: user.uid, stats };
-      });
-
-      const statsResults = await Promise.all(statsPromises);
-      const statsMap: { [userId: string]: UserStats } = {};
-      
-      statsResults.forEach(({ userId, stats }) => {
-        if (stats) {
-          statsMap[userId] = stats;
-        }
-      });
-
-      setUserStats(statsMap);
-    } catch (error) {
       console.error('Error loading user stats:', error);
-      toast.error('Failed to load user statistics');
+      toast.error('Failed to load user stats');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleEditWeighIn = async (userId: string, weekNumber: number, newWeight: number) => {
+  const handleUpdateWeighIn = async (userId: string, weekNumber: number, newWeight: number) => {
     if (!selectedCompetition) return;
 
     try {
-      await CompetitionService.submitWeighIn(
-        selectedCompetition,
-        userId,
-        weekNumber,
-        newWeight
-      );
-      
+      await CompetitionService.submitWeighIn(selectedCompetition, userId, weekNumber, newWeight);
       toast.success('Weigh-in updated successfully!');
       loadUserStats(); // Reload stats
     } catch (error) {
@@ -112,10 +79,23 @@ const UserManagement: React.FC<UserManagementProps> = ({
         <div className="flex items-center space-x-4">
           <select
             value={selectedCompetition || ''}
-            onChange={(e) => setSelectedCompetition(Number(e.target.value))}
+            onChange={(e) => {
+              const year = parseInt(e.target.value);
+              setSelectedCompetition(year);
+              // Reload stats for selected competition
+              if (year) {
+                CompetitionService.getAllUserStats(year).then(stats => {
+                  setAllStats(stats);
+                }).catch(error => {
+                  console.error('Error loading stats:', error);
+                  toast.error('Failed to load stats');
+                });
+              }
+            }}
             className="input"
           >
-            {competitions.map((comp) => (
+            <option value="">Select Competition</option>
+            {competitions.map(comp => (
               <option key={comp.year} value={comp.year}>
                 {comp.year} Competition
               </option>
@@ -124,140 +104,83 @@ const UserManagement: React.FC<UserManagementProps> = ({
         </div>
       </div>
 
-      {/* Users Table */}
+      {/* Users List */}
       <div className="card">
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  User
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Start Weight
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Current Weight
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Total Loss
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Loss %
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Weeks
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Last Weigh-In
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Actions
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {users.map((user) => {
-                const stats = userStats[user.uid];
-                return (
-                  <tr key={user.uid}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-10 w-10">
-                          <div className="h-10 w-10 rounded-full bg-primary-100 flex items-center justify-center">
-                            <span className="text-primary-600 font-medium">
-                              {user.displayName.charAt(0).toUpperCase()}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
-                            {user.displayName}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {user.email || 'No email'}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {stats?.startWeight.toFixed(1) || 'N/A'} lbs
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {stats?.currentWeight.toFixed(1) || 'N/A'} lbs
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className={`font-medium ${
-                        stats && stats.totalWeightLoss > 0 ? 'text-success-600' : 'text-gray-500'
-                      }`}>
-                        {stats?.totalWeightLoss.toFixed(1) || '0.0'} lbs
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      <span className={`font-medium ${
-                        stats && stats.totalWeightLossPercentage > 0 ? 'text-success-600' : 'text-gray-500'
-                      }`}>
-                        {stats?.totalWeightLossPercentage.toFixed(1) || '0.0'}%
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                      {stats?.weeksParticipated || 0}/12
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {stats?.lastWeighIn?.toLocaleDateString() || 'Never'}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                      <button
-                        onClick={() => {
-                          // This would open a modal to edit weigh-ins
-                          console.log("Edit weigh-in feature coming soon!");
-                        }}
-                        className="text-primary-600 hover:text-primary-900"
-                      >
-                        Edit Weigh-ins
-                      </button>
-                    </td>
+        <div className="card-header">
+          <h3 className="text-lg font-semibold text-gray-900">All Users</h3>
+        </div>
+        <div className="card-body">
+          {allStats.length === 0 ? (
+            <p className="text-gray-500 text-center py-8">No user data available</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Name
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Email
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Role
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Weigh-ins
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Weight Loss
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {/* Summary Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="card">
-          <div className="card-body text-center">
-            <p className="text-2xl font-bold text-primary-600">
-              {users.length}
-            </p>
-            <p className="text-sm text-gray-500">Total Users</p>
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-body text-center">
-            <p className="text-2xl font-bold text-success-600">
-              {Object.values(userStats).filter(stats => stats.totalWeightLoss > 0).length}
-            </p>
-            <p className="text-sm text-gray-500">Users Losing Weight</p>
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-body text-center">
-            <p className="text-2xl font-bold text-warning-600">
-              {Object.values(userStats).reduce((sum, stats) => sum + stats.weeksParticipated, 0)}
-            </p>
-            <p className="text-sm text-gray-500">Total Weigh-ins</p>
-          </div>
-        </div>
-        <div className="card">
-          <div className="card-body text-center">
-            <p className="text-2xl font-bold text-danger-600">
-              {Object.values(userStats).reduce((sum, stats) => sum + stats.totalWeightLoss, 0).toFixed(1)}
-            </p>
-            <p className="text-sm text-gray-500">Total Weight Lost (lbs)</p>
-          </div>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {allStats.map((stat) => {
+                    const user = users.find(u => u.uid === stat.userId);
+                    return (
+                      <tr key={stat.userId}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {stat.displayName || user?.displayName || 'Unknown User'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user?.email || 'N/A'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                            user?.role === 'admin' 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            {user?.role || 'regular'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {stat.totalWeighIns}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-success-600 font-semibold">
+                          -{stat.totalWeightLoss.toFixed(1)} lbs
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <button
+                            onClick={() => {
+                              // This would open a modal to edit weigh-ins
+                              toast.success('Edit weigh-in feature coming soon!');
+                            }}
+                            className="text-primary-600 hover:text-primary-900"
+                          >
+                            Edit
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
         </div>
       </div>
     </div>
