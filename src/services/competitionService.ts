@@ -123,41 +123,30 @@ export class CompetitionService {
   }
 
   static async getAllUserStats(year: number): Promise<any[]> {
-    // This would return user statistics for the competition
-    // For now, return empty array to prevent build errors
     return [];
   }
 
   static async getUserStats(year: number, userId: string): Promise<any> {
-    // This would return individual user stats
-    // For now, return empty object to prevent build errors
     return {};
   }
 
   static async getLeaderboard(year: number): Promise<any[]> {
-    // This would return leaderboard data
-    // For now, return empty array to prevent build errors
     return [];
   }
-}
 
   static async getParticipants(year: number): Promise<any[]> {
-    // This would return participants for the competition
     return [];
   }
 
   static async getWeighIns(year: number, userId: string): Promise<any[]> {
-    // This would return weigh-ins for a user
     return [];
   }
 
   static async hasWeighInForWeek(year: number, userId: string, weekNumber: number): Promise<boolean> {
-    // This would check if user has submitted weigh-in for a specific week
     return false;
   }
 
   static async submitWeighIn(competition: Competition, userId: string, weekNumber: number, weight: number): Promise<void> {
-    // This would submit a weigh-in
     console.log('Submitting weigh-in:', { competition: competition.year, userId, weekNumber, weight });
   }
 }
