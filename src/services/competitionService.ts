@@ -139,14 +139,29 @@ export class CompetitionService {
   }
 
   static async getWeighIns(year: number, userId: string): Promise<any[]> {
-    return [];
+    const weighInsRef = collection(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins');
+    const querySnapshot = await getDocs(weighInsRef);
+    
+    return querySnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
   }
 
   static async hasWeighInForWeek(year: number, userId: string, weekNumber: number): Promise<boolean> {
-    return false;
+    const weighInRef = doc(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins', weekNumber.toString());
+    const weighInSnap = await getDoc(weighInRef);
+    return weighInSnap.exists();
   }
 
   static async submitWeighIn(year: number, userId: string, weekNumber: number, weight: number, notes?: string): Promise<void> {
-    console.log('Submitting weigh-in:', { year, userId, weekNumber, weight, notes });
+    const weighInRef = doc(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins', weekNumber.toString());
+    
+    await setDoc(weighInRef, {
+      weekNumber,
+      weight,
+      notes: notes || '',
+      submittedAt: serverTimestamp(),
+    });
   }
 }
