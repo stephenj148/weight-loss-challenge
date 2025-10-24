@@ -114,7 +114,6 @@ export class CompetitionService {
     nextWeighInDate.setDate(nextWeighInDate.getDate() + (currentWeek * 7));
     return nextWeighInDate;
   }
-}
 
   static isCompetitionActive(competition: Competition): boolean {
     const now = new Date();
