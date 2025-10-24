@@ -115,3 +115,11 @@ export class CompetitionService {
     return nextWeighInDate;
   }
 }
+
+  static isCompetitionActive(competition: Competition): boolean {
+    const now = new Date();
+    return competition.status === 'active' && 
+           competition.startDate <= now && 
+           competition.endDate >= now;
+  }
+}
