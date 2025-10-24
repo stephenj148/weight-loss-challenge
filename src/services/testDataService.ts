@@ -61,40 +61,61 @@ export class TestDataService {
   }
   
   static async generateTestUsers(year: number): Promise<void> {
-    console.log(`Generating ${this.TEST_USERS.length} test users with data for year ${year}`);
+    console.log(`🚀 Starting test user generation for year ${year}`);
     
-    for (let i = 0; i < this.TEST_USERS.length; i++) {
-      const testUser = this.TEST_USERS[i];
-      const userId = `test-user-${i + 1}`;
+    try {
+      console.log(`📊 Generating ${this.TEST_USERS.length} test users with data for year ${year}`);
       
-      console.log(`Creating test user: ${testUser.name} (${userId})`);
-      
-      try {
-        // Create participant document directly (don't create user auth records)
-        const participantRef = doc(db, 'competitions', year.toString(), 'participants', userId);
-        await setDoc(participantRef, {
-          userId,
-          name: testUser.name,
-          email: `test${i + 1}@example.com`,
-          role: 'regular',
-          joinedAt: serverTimestamp(),
-          isTestUser: true, // Mark as test user
-        });
+      for (let i = 0; i < this.TEST_USERS.length; i++) {
+        const testUser = this.TEST_USERS[i];
+        const userId = `test-user-${i + 1}`;
         
-        // Generate weigh-in data for this user
-        await this.generateTestData(year, userId, testUser.name, testUser.startWeight);
+        console.log(`👤 Creating test user ${i + 1}/${this.TEST_USERS.length}: ${testUser.name} (${userId})`);
         
-        console.log(`✅ Created test user: ${testUser.name}`);
-        
-        // Add delay between users
-        await new Promise(resolve => setTimeout(resolve, 500));
-        
-      } catch (error) {
-        console.error(`❌ Error creating test user ${testUser.name}:`, error);
+        try {
+          // Create participant document directly (don't create user auth records)
+          const participantRef = doc(db, 'competitions', year.toString(), 'participants', userId);
+          console.log(`📝 Creating participant document at: competitions/${year}/participants/${userId}`);
+          
+          const participantData = {
+            userId,
+            name: testUser.name,
+            email: `test${i + 1}@example.com`,
+            role: 'regular',
+            joinedAt: serverTimestamp(),
+            isTestUser: true, // Mark as test user
+          };
+          
+          console.log(`📄 Participant data:`, participantData);
+          await setDoc(participantRef, participantData);
+          console.log(`✅ Participant document created successfully`);
+          
+          // Generate weigh-in data for this user
+          console.log(`⚖️ Generating weigh-in data for ${testUser.name}...`);
+          await this.generateTestData(year, userId, testUser.name, testUser.startWeight);
+          
+          console.log(`🎉 Successfully created test user: ${testUser.name}`);
+          
+          // Add delay between users
+          await new Promise(resolve => setTimeout(resolve, 500));
+          
+        } catch (error) {
+          console.error(`❌ Error creating test user ${testUser.name}:`, error);
+          console.error(`Error details:`, {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+          });
+          // Continue with next user instead of stopping
+        }
       }
+      
+      console.log(`🎊 Test data generation complete! Created ${this.TEST_USERS.length} users with 12 weeks of data each.`);
+      
+    } catch (error) {
+      console.error(`💥 Fatal error in generateTestUsers:`, error);
+      throw error;
     }
-    
-    console.log(`🎉 Test data generation complete! Created ${this.TEST_USERS.length} users with 12 weeks of data each.`);
   }
   
   static async generateTestDataForAllUsers(year: number): Promise<void> {
