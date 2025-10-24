@@ -123,19 +123,120 @@ export class CompetitionService {
   }
 
   static async getAllUserStats(year: number): Promise<any[]> {
-    return [];
+    try {
+      const participantsRef = collection(db, 'competitions', year.toString(), 'participants');
+      const participantsSnapshot = await getDocs(participantsRef);
+      
+      const userStats = [];
+      
+      for (const participantDoc of participantsSnapshot.docs) {
+        const userId = participantDoc.id;
+        const weighInsRef = collection(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins');
+        const weighInsSnapshot = await getDocs(weighInsRef);
+        
+        const weighIns = weighInsSnapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        
+        if (weighIns.length > 0) {
+          const firstWeight = weighIns[0].weight;
+          const lastWeight = weighIns[weighIns.length - 1].weight;
+          const totalLoss = firstWeight - lastWeight;
+          const totalLossPercentage = (totalLoss / firstWeight) * 100;
+          
+          userStats.push({
+            userId,
+            displayName: participantDoc.data().displayName || 'Unknown User',
+            totalWeighIns: weighIns.length,
+            firstWeight,
+            lastWeight,
+            totalWeightLoss: totalLoss,
+            totalWeightLossPercentage: totalLossPercentage,
+            weeksParticipated: weighIns.length,
+            weighIns: weighIns
+          });
+        }
+      }
+      
+      return userStats.sort((a, b) => b.totalWeightLoss - a.totalWeightLoss);
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      return [];
+    }
   }
 
   static async getUserStats(year: number, userId: string): Promise<any> {
-    return {};
+    try {
+      const weighInsRef = collection(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins');
+      const weighInsSnapshot = await getDocs(weighInsRef);
+      
+      const weighIns = weighInsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      
+      if (weighIns.length === 0) {
+        return {
+          userId,
+          totalWeighIns: 0,
+          currentWeight: 0,
+          totalWeightLoss: 0,
+          totalWeightLossPercentage: 0,
+          weeksParticipated: 0,
+          weighIns: []
+        };
+      }
+      
+      const firstWeight = weighIns[0].weight;
+      const lastWeight = weighIns[weighIns.length - 1].weight;
+      const totalLoss = firstWeight - lastWeight;
+      const totalLossPercentage = (totalLoss / firstWeight) * 100;
+      
+      return {
+        userId,
+        totalWeighIns: weighIns.length,
+        currentWeight: lastWeight,
+        totalWeightLoss: totalLoss,
+        totalWeightLossPercentage: totalLossPercentage,
+        weeksParticipated: weighIns.length,
+        weighIns: weighIns
+      };
+    } catch (error) {
+      console.error('Error getting user stats:', error);
+      return {
+        userId,
+        totalWeighIns: 0,
+        currentWeight: 0,
+        totalWeightLoss: 0,
+        totalWeightLossPercentage: 0,
+        weeksParticipated: 0,
+        weighIns: []
+      };
+    }
   }
 
   static async getLeaderboard(year: number): Promise<any[]> {
-    return [];
+    const userStats = await this.getAllUserStats(year);
+    return userStats.map((stat, index) => ({
+      ...stat,
+      rank: index + 1
+    }));
   }
 
   static async getParticipants(year: number): Promise<any[]> {
-    return [];
+    try {
+      const participantsRef = collection(db, 'competitions', year.toString(), 'participants');
+      const participantsSnapshot = await getDocs(participantsRef);
+      
+      return participantsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+    } catch (error) {
+      console.error('Error getting participants:', error);
+      return [];
+    }
   }
 
   static async getWeighIns(year: number, userId: string): Promise<any[]> {
@@ -161,7 +262,7 @@ export class CompetitionService {
       weekNumber,
       weight,
       notes: notes || '',
-      submittedAt: serverTimestamp(),
+      timestamp: serverTimestamp(),
     });
   }
 }
