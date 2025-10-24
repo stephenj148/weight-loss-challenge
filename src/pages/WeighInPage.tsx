@@ -66,6 +66,7 @@ const WeighInPage: React.FC = () => {
         }
       }
     } catch (error) {
+      console.error('Error submitting weigh-in:' error);
       console.error('Error loading weigh-in data:', error);
       toast.error('Failed to load weigh-in data');
     } finally {
@@ -93,6 +94,7 @@ const WeighInPage: React.FC = () => {
       // Reload data to get updated weigh-ins
       await loadWeighInData();
     } catch (error) {
+      console.error('Error submitting weigh-in:' error);
       console.error('Error submitting weigh-in:', error);
       toast.error('Failed to submit weigh-in');
     } finally {
