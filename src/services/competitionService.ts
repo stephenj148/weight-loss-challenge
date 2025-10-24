@@ -140,3 +140,24 @@ export class CompetitionService {
     return [];
   }
 }
+
+  static async getParticipants(year: number): Promise<any[]> {
+    // This would return participants for the competition
+    return [];
+  }
+
+  static async getWeighIns(year: number, userId: string): Promise<any[]> {
+    // This would return weigh-ins for a user
+    return [];
+  }
+
+  static async hasWeighInForWeek(year: number, userId: string, weekNumber: number): Promise<boolean> {
+    // This would check if user has submitted weigh-in for a specific week
+    return false;
+  }
+
+  static async submitWeighIn(competition: Competition, userId: string, weekNumber: number, weight: number): Promise<void> {
+    // This would submit a weigh-in
+    console.log('Submitting weigh-in:', { competition: competition.year, userId, weekNumber, weight });
+  }
+}
