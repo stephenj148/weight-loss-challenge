@@ -155,7 +155,7 @@ export class CompetitionService {
             averageWeeklyLoss: totalLoss / weighIns.length,
             weeksParticipated: weighIns.length,
             totalWeighIns: weighIns.length,
-            lastWeighIn: weighIns[weighIns.length - 1]?.timestamp?.toDate(),
+            lastWeighIn: (weighIns[weighIns.length - 1] as any)?.timestamp?.toDate(),
             weighIns: weighIns
           });
         }
@@ -209,7 +209,7 @@ export class CompetitionService {
         averageWeeklyLoss: totalLoss / weighIns.length,
         weeksParticipated: weighIns.length,
         totalWeighIns: weighIns.length,
-        lastWeighIn: weighIns[weighIns.length - 1]?.timestamp?.toDate(),
+        lastWeighIn: (weighIns[weighIns.length - 1] as any)?.timestamp?.toDate(),
         weighIns: weighIns
       };
     } catch (error) {
