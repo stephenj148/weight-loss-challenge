@@ -42,22 +42,38 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, on
       console.log(`Loading stats for competition ${activeCompetition.year} with ${users.length} users`);
       setSelectedCompetition(activeCompetition.year);
 
-      // Get stats for each user individually
+      // Get stats for each user individually, including users with no weigh-ins
       const statsPromises = users.map(async (user) => {
         console.log(`Getting stats for user: ${user.uid} (${user.displayName})`);
         const userStats = await CompetitionService.getUserStats(activeCompetition.year, user.uid);
-        if (userStats) {
+        
+        // If no stats found, create a default entry for this user
+        if (!userStats) {
+          console.log(`No weigh-ins found for user ${user.uid}, creating default entry`);
+          return {
+            userId: user.uid,
+            displayName: user.displayName,
+            startWeight: 0,
+            currentWeight: 0,
+            totalWeightLoss: 0,
+            totalWeightLossPercentage: 0,
+            averageWeeklyLoss: 0,
+            weeksParticipated: 0,
+            totalWeighIns: 0,
+            lastWeighIn: undefined,
+            weighIns: []
+          };
+        } else {
           // Add the user's display name to the stats
           userStats.displayName = user.displayName;
+          return userStats;
         }
-        return userStats;
       });
 
       const allStats = await Promise.all(statsPromises);
-      const validStats = allStats.filter(stats => stats !== null);
       
-      console.log('User stats loaded:', validStats);
-      setAllStats(validStats);
+      console.log('User stats loaded (including users with no weigh-ins):', allStats);
+      setAllStats(allStats);
     } catch (error) {
       console.error('Error loading user stats:', error);
       toast.error('Failed to load user stats');
@@ -174,10 +190,10 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, on
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {stat.totalWeighIns}
+                          {stat.totalWeighIns || 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-success-600 font-semibold">
-                          -{stat.totalWeightLoss.toFixed(1)} lbs
+                          {stat.totalWeighIns > 0 ? `-${stat.totalWeightLoss.toFixed(1)} lbs` : 'No weigh-ins yet'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           <button
