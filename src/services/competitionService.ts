@@ -180,15 +180,23 @@ export class CompetitionService {
 
   static async getUserStats(year: number, userId: string): Promise<any> {
     try {
+      console.log(`Getting user stats for year: ${year}, userId: ${userId}`);
       const weighInsRef = collection(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins');
       const weighInsSnapshot = await getDocs(weighInsRef);
       
-      const weighIns = weighInsSnapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      }));
+      console.log(`Found ${weighInsSnapshot.docs.length} weigh-ins for user ${userId}`);
+      
+      const weighIns = weighInsSnapshot.docs.map(doc => {
+        const data = doc.data();
+        console.log(`Weigh-in doc ${doc.id}:`, data);
+        return {
+          id: doc.id,
+          ...data
+        };
+      });
       
       if (weighIns.length === 0) {
+        console.log(`No weigh-ins found for user ${userId}`);
         return {
           userId,
           displayName: 'Unknown User',
@@ -209,7 +217,7 @@ export class CompetitionService {
       const totalLoss = firstWeight - lastWeight;
       const totalLossPercentage = (totalLoss / firstWeight) * 100;
       
-      return {
+      const userStats = {
         userId,
         displayName: 'Unknown User', // Will be populated by caller
         startWeight: firstWeight,
@@ -222,6 +230,9 @@ export class CompetitionService {
         lastWeighIn: (weighIns[weighIns.length - 1] as any)?.timestamp?.toDate(),
         weighIns: weighIns
       };
+      
+      console.log(`Created user stats for ${userId}:`, userStats);
+      return userStats;
     } catch (error) {
       console.error('Error getting user stats:', error);
       return {
@@ -280,13 +291,18 @@ export class CompetitionService {
   }
 
   static async submitWeighIn(year: number, userId: string, weekNumber: number, weight: number, notes?: string): Promise<void> {
+    console.log(`Submitting weigh-in: year=${year}, userId=${userId}, week=${weekNumber}, weight=${weight}`);
     const weighInRef = doc(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins', weekNumber.toString());
     
-    await setDoc(weighInRef, {
+    const weighInData = {
       weekNumber,
       weight,
       notes: notes || '',
       timestamp: serverTimestamp(),
-    });
+    };
+    
+    console.log('Saving weigh-in data:', weighInData);
+    await setDoc(weighInRef, weighInData);
+    console.log('Weigh-in saved successfully!');
   }
 }
