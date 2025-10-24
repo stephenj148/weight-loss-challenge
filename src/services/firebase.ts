@@ -3,7 +3,7 @@ import { getAuth, connectAuthEmulator } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore';
 import { getStorage, connectStorageEmulator } from 'firebase/storage';
 
-// Firebase configuration
+// Firebase configuration - Updated to fix Supabase issue
 const firebaseConfig = {
   apiKey: "AIzaSyAZG4SxwWExDzJnjs3wbWboAvkmbAJQYU8",
   authDomain: "weight-loss-challenge-ap-6c2fb.firebaseapp.com",
@@ -12,6 +12,8 @@ const firebaseConfig = {
   messagingSenderId: "886097951337",
   appId: "1:886097951337:web:ce5725a0f62249366c80f8"
 };
+
+console.log('Firebase config loaded:', firebaseConfig.projectId);
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
