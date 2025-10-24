@@ -147,6 +147,6 @@ export class CompetitionService {
   }
 
   static async submitWeighIn(year: number, userId: string, weekNumber: number, weight: number, notes?: string): Promise<void> {
-    console.log('Submitting weigh-in:', { competition: competition.year, userId, weekNumber, weight });
+    console.log('Submitting weigh-in:', { year, userId, weekNumber, weight, notes });
   }
 }
