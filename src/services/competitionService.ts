@@ -261,8 +261,43 @@ export class CompetitionService {
 
   static async getParticipants(year: number): Promise<any[]> {
     try {
+      console.log(`Getting participants for year: ${year}`);
+      
+      // Instead of looking for participant documents, look for users who have weigh-ins
       const participantsRef = collection(db, 'competitions', year.toString(), 'participants');
       const participantsSnapshot = await getDocs(participantsRef);
+      
+      console.log(`Found ${participantsSnapshot.docs.length} participant documents`);
+      
+      // If no participant documents exist, try to find users with weigh-ins
+      if (participantsSnapshot.docs.length === 0) {
+        console.log('No participant documents found, looking for users with weigh-ins...');
+        
+        // Get all users from the users collection who might have weigh-ins
+        const usersRef = collection(db, 'users');
+        const usersSnapshot = await getDocs(usersRef);
+        
+        const participants = [];
+        for (const userDoc of usersSnapshot.docs) {
+          const userId = userDoc.id;
+          const weighInsRef = collection(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins');
+          const weighInsSnapshot = await getDocs(weighInsRef);
+          
+          if (weighInsSnapshot.docs.length > 0) {
+            console.log(`Found ${weighInsSnapshot.docs.length} weigh-ins for user ${userId}`);
+            const userData = userDoc.data();
+            participants.push({
+              userId,
+              name: userData.displayName || 'Unknown User',
+              joinedAt: userData.createdAt || new Date(),
+              totalWeighIns: weighInsSnapshot.docs.length,
+            });
+          }
+        }
+        
+        console.log(`Found ${participants.length} participants with weigh-ins`);
+        return participants;
+      }
       
       return participantsSnapshot.docs.map(doc => ({
         id: doc.id,
