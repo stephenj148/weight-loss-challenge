@@ -70,14 +70,14 @@ export class TestDataService {
       console.log(`Creating test user: ${testUser.name} (${userId})`);
       
       try {
-        // Create user document in users collection
-        const userRef = doc(db, 'users', userId);
-        await setDoc(userRef, {
-          uid: userId,
+        // Create participant document directly (don't create user auth records)
+        const participantRef = doc(db, 'competitions', year.toString(), 'participants', userId);
+        await setDoc(participantRef, {
+          userId,
+          name: testUser.name,
           email: `test${i + 1}@example.com`,
-          displayName: testUser.name,
           role: 'regular',
-          createdAt: serverTimestamp(),
+          joinedAt: serverTimestamp(),
           isTestUser: true, // Mark as test user
         });
         
@@ -162,27 +162,27 @@ export class TestDataService {
     
     const { collection, getDocs, deleteDoc } = await import('firebase/firestore');
     
-    // Get all users
-    const usersRef = collection(db, 'users');
-    const usersSnapshot = await getDocs(usersRef);
+    // Get all competitions
+    const competitionsRef = collection(db, 'competitions');
+    const competitionsSnapshot = await getDocs(competitionsRef);
     
-    for (const userDoc of usersSnapshot.docs) {
-      const userData = userDoc.data();
-      const userId = userDoc.id;
+    for (const compDoc of competitionsSnapshot.docs) {
+      const year = compDoc.id;
+      console.log(`Checking competition ${year} for test users...`);
       
-      // Only delete test users
-      if (userData.isTestUser) {
-        console.log(`Deleting test user: ${userData.displayName}`);
+      // Get all participants for this competition
+      const participantsRef = collection(db, 'competitions', year, 'participants');
+      const participantsSnapshot = await getDocs(participantsRef);
+      
+      for (const participantDoc of participantsSnapshot.docs) {
+        const participantData = participantDoc.data();
+        const userId = participantDoc.id;
         
-        // Delete user document
-        await deleteDoc(doc(db, 'users', userId));
-        
-        // Delete all weigh-ins for this user (for all years)
-        const competitionsRef = collection(db, 'competitions');
-        const competitionsSnapshot = await getDocs(competitionsRef);
-        
-        for (const compDoc of competitionsSnapshot.docs) {
-          const year = compDoc.id;
+        // Only delete test users
+        if (participantData.isTestUser) {
+          console.log(`Deleting test user: ${participantData.name}`);
+          
+          // Delete all weigh-ins for this user
           const weighInsRef = collection(db, 'competitions', year, 'participants', userId, 'weigh-ins');
           const weighInsSnapshot = await getDocs(weighInsRef);
           
@@ -191,10 +191,7 @@ export class TestDataService {
           }
           
           // Delete participant document
-          const participantRef = doc(db, 'competitions', year, 'participants', userId);
-          await deleteDoc(participantRef).catch(() => {
-            // Ignore error if document doesn't exist
-          });
+          await deleteDoc(doc(db, 'competitions', year, 'participants', userId));
         }
       }
     }
