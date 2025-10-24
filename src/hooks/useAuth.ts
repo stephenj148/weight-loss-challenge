@@ -1,5 +1,4 @@
-/* eslint-disable */
-import { useState, useEffect, useContext, createContext, ReactNode } from 'react';
+import React, { useState, useEffect, useContext, createContext } from 'react';
 import { AuthService } from '../services/authService';
 import { User } from '../types';
 
@@ -23,7 +22,7 @@ export const useAuth = () => {
 };
 
 interface AuthProviderProps {
-  children: ReactNode;
+  children: React.ReactNode;
 }
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
@@ -84,9 +83,5 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     isAdmin: user?.role === 'admin',
   };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
+  return React.createElement(AuthContext.Provider, { value }, children);
 };
