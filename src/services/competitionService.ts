@@ -147,8 +147,8 @@ export class CompetitionService {
           
           userStats.push({
             userId,
-            displayName: participantDoc.data().displayName || 'Unknown User',
-            totalWeighIns: weighIns.length,
+            name: participantDoc.data().displayName || 'Unknown User',
+            weeksParticipated: weighIns.length,
             firstWeight,
             lastWeight,
             totalWeightLoss: totalLoss,
@@ -195,7 +195,7 @@ export class CompetitionService {
       
       return {
         userId,
-        totalWeighIns: weighIns.length,
+        weeksParticipated: weighIns.length,
         currentWeight: lastWeight,
         totalWeightLoss: totalLoss,
         totalWeightLossPercentage: totalLossPercentage,
