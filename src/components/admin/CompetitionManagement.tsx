@@ -232,3 +232,85 @@ const CompetitionManagement: React.FC<CompetitionManagementProps> = ({
 };
 
 export default CompetitionManagement;
+
+      {/* Edit Competition Modal */}
+      {editingCompetition && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">
+                Edit Competition
+              </h3>
+              
+              <form onSubmit={handleSubmit(async (data) => {
+                setLoading(true);
+                try {
+                  await CompetitionService.updateCompetition(editingCompetition.year, {
+                    status: data.status,
+                  });
+                  
+                  toast.success('Competition updated successfully!');
+                  setEditingCompetition(null);
+                  reset();
+                  onCompetitionUpdate();
+                } catch (error) {
+                  console.error('Error updating competition:', error);
+                  toast.error('Failed to update competition');
+                } finally {
+                  setLoading(false);
+                }
+              })} className="space-y-4">
+                <div className="form-group">
+                  <label className="form-label">Year</label>
+                  <input
+                    value={editingCompetition.year}
+                    disabled
+                    className="input bg-gray-100"
+                  />
+                </div>
+
+                <div className="form-group">
+                  <label className="form-label">Status</label>
+                  <select
+                    {...register('status', { required: 'Status is required' })}
+                    defaultValue={editingCompetition.status}
+                    className={errors.status ? 'input-error' : 'input'}
+                  >
+                    <option value="draft">Draft</option>
+                    <option value="active">Active</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                  {errors.status && (
+                    <p className="form-error">{errors.status.message}</p>
+                  )}
+                </div>
+
+                <div className="flex justify-end space-x-3">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingCompetition(null);
+                      reset();
+                    }}
+                    className="btn-outline"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="btn-primary"
+                  >
+                    {loading ? 'Updating...' : 'Update Competition'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default CompetitionManagement;
