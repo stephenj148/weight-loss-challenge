@@ -28,11 +28,19 @@ const CompetitionManagement: React.FC<CompetitionManagementProps> = ({
   const onSubmit = async (data: CompetitionSettings & { year: number }) => {
     setLoading(true);
     try {
+      // Generate weigh-in dates automatically (every 7 days for 12 weeks)
+      const weighInDates = [];
+      for (let i = 0; i < 12; i++) {
+        const date = new Date(data.startDate);
+        date.setDate(date.getDate() + (i * 7));
+        weighInDates.push(date);
+      }
+
       await CompetitionService.createCompetition(
         data.year,
         {
           startDate: data.startDate,
-          weighInDates: data.weighInDates,
+          weighInDates: weighInDates,
           status: data.status,
         },
         'admin' // This would be the current user ID
@@ -63,16 +71,6 @@ const CompetitionManagement: React.FC<CompetitionManagementProps> = ({
       console.error('Error archiving competition:', error);
       toast.error('Failed to archive competition');
     }
-  };
-
-  const generateWeighInDates = (startDate: Date) => {
-    const dates = [];
-    for (let i = 0; i < 12; i++) {
-      const date = new Date(startDate);
-      date.setDate(date.getDate() + (i * 7));
-      dates.push(date);
-    }
-    return dates;
   };
 
   return (
@@ -168,7 +166,7 @@ const CompetitionManagement: React.FC<CompetitionManagementProps> = ({
                     })}
                     type="number"
                     className={errors.year ? 'input-error' : 'input'}
-                    placeholder="2024"
+                    placeholder="2026"
                   />
                   {errors.year && (
                     <p className="form-error">{errors.year.message}</p>
