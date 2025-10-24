@@ -147,13 +147,15 @@ export class CompetitionService {
           
           userStats.push({
             userId,
-            name: participantDoc.data().displayName || 'Unknown User',
-            weeksParticipated: weighIns.length,
-            firstWeight,
-            lastWeight,
+            displayName: participantDoc.data().displayName || 'Unknown User',
+            startWeight: firstWeight,
+            currentWeight: lastWeight,
             totalWeightLoss: totalLoss,
             totalWeightLossPercentage: totalLossPercentage,
+            averageWeeklyLoss: totalLoss / weighIns.length,
             weeksParticipated: weighIns.length,
+            totalWeighIns: weighIns.length,
+            lastWeighIn: weighIns[weighIns.length - 1]?.timestamp?.toDate(),
             weighIns: weighIns
           });
         }
@@ -179,11 +181,15 @@ export class CompetitionService {
       if (weighIns.length === 0) {
         return {
           userId,
-          totalWeighIns: 0,
+          displayName: 'Unknown User',
+          startWeight: 0,
           currentWeight: 0,
           totalWeightLoss: 0,
           totalWeightLossPercentage: 0,
+          averageWeeklyLoss: 0,
           weeksParticipated: 0,
+          totalWeighIns: 0,
+          lastWeighIn: undefined,
           weighIns: []
         };
       }
@@ -195,22 +201,30 @@ export class CompetitionService {
       
       return {
         userId,
-        weeksParticipated: weighIns.length,
+        displayName: 'Unknown User', // Will be populated by caller
+        startWeight: firstWeight,
         currentWeight: lastWeight,
         totalWeightLoss: totalLoss,
         totalWeightLossPercentage: totalLossPercentage,
+        averageWeeklyLoss: totalLoss / weighIns.length,
         weeksParticipated: weighIns.length,
+        totalWeighIns: weighIns.length,
+        lastWeighIn: weighIns[weighIns.length - 1]?.timestamp?.toDate(),
         weighIns: weighIns
       };
     } catch (error) {
       console.error('Error getting user stats:', error);
       return {
         userId,
-        totalWeighIns: 0,
+        displayName: 'Unknown User',
+        startWeight: 0,
         currentWeight: 0,
         totalWeightLoss: 0,
         totalWeightLossPercentage: 0,
+        averageWeeklyLoss: 0,
         weeksParticipated: 0,
+        totalWeighIns: 0,
+        lastWeighIn: undefined,
         weighIns: []
       };
     }
