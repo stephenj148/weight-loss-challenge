@@ -121,7 +121,6 @@ export class CompetitionService {
            competition.startDate <= now && 
            competition.endDate >= now;
   }
-}
 
   static async getAllUserStats(year: number): Promise<any[]> {
     // This would return user statistics for the competition
