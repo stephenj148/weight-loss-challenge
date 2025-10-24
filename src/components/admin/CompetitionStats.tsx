@@ -114,7 +114,7 @@ const CompetitionStats: React.FC<CompetitionStatsProps> = ({ competitions }) => 
               selectedCompetition?.status === 'archived' ? 'text-gray-600' : 
               'text-warning-600'
             }`}>
-              {selectedCompetition?.status?.charAt(0).toUpperCase() + selectedCompetition?.status?.slice(1)}
+              {selectedCompetition?.status ? selectedCompetition.status.charAt(0).toUpperCase() + selectedCompetition.status.slice(1) : 'Unknown'}
             </p>
           </div>
         </div>
