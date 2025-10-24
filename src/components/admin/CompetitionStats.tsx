@@ -137,7 +137,7 @@ const CompetitionStats: React.FC<CompetitionStatsProps> = ({ competitions }) => 
                       <span className="text-primary-600 font-semibold">#{index + 1}</span>
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-900">{stat.displayName}</p>
+                      <p className="font-semibold text-gray-900">{stat.name}</p>
                       <p className="text-sm text-gray-600">{stat.totalWeighIns} weigh-ins</p>
                     </div>
                   </div>
@@ -193,7 +193,7 @@ const CompetitionStats: React.FC<CompetitionStatsProps> = ({ competitions }) => 
                         #{index + 1}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {stat.displayName}
+                        {stat.name}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                         {stat.totalWeighIns}

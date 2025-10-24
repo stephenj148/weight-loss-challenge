@@ -143,7 +143,7 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, on
                     return (
                       <tr key={stat.userId}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {stat.displayName || user?.displayName || 'Unknown User'}
+                          {stat.name || user?.displayName || 'Unknown User'}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {user?.email || 'N/A'}
