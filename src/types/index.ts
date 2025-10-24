@@ -117,13 +117,14 @@ export interface CompetitionSettings {
 // Statistics types
 export interface UserStats {
   userId: string;
-  name: string;
+  displayName: string;
   startWeight: number;
   currentWeight: number;
   totalWeightLoss: number;
   totalWeightLossPercentage: number;
   averageWeeklyLoss: number;
   weeksParticipated: number;
+  totalWeighIns: number;
   lastWeighIn?: Date;
 }
 
