@@ -115,24 +115,24 @@ const DashboardPage: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 <StatsCard
                   title="Current Weight"
-                  value={`${userStats.currentWeight.toFixed(1)} lbs`}
+                  value={`${userStats?.currentWeight?.toFixed(1) || "0.0"} lbs`}
                   icon="⚖️"
                 />
                 <StatsCard
                   title="Total Loss"
-                  value={`${userStats.totalWeightLoss.toFixed(1)} lbs`}
+                  value={`${userStats?.totalWeightLoss?.toFixed(1) || "0.0"} lbs`}
                   icon="📉"
                   color="success"
                 />
                 <StatsCard
                   title="Loss Percentage"
-                  value={`${userStats.totalWeightLossPercentage.toFixed(1)}%`}
+                  value={`${userStats?.totalWeightLossPercentage?.toFixed(1) || "0.0"}%`}
                   icon="📊"
                   color="primary"
                 />
                 <StatsCard
                   title="Weeks Participated"
-                  value={`${userStats.weeksParticipated}/12`}
+                  value={`${userStats?.weeksParticipated || 0}/12`}
                   icon="📅"
                 />
               </div>
