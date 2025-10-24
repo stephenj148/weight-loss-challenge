@@ -140,8 +140,8 @@ export class CompetitionService {
         }));
         
         if (weighIns.length > 0) {
-          const firstWeight = weighIns[0].weight;
-          const lastWeight = weighIns[weighIns.length - 1].weight;
+          const firstWeight = (weighIns[0] as any).weight;
+          const lastWeight = (weighIns[weighIns.length - 1] as any).weight;
           const totalLoss = firstWeight - lastWeight;
           const totalLossPercentage = (totalLoss / firstWeight) * 100;
           
@@ -188,8 +188,8 @@ export class CompetitionService {
         };
       }
       
-      const firstWeight = weighIns[0].weight;
-      const lastWeight = weighIns[weighIns.length - 1].weight;
+      const firstWeight = (weighIns[0] as any).weight;
+      const lastWeight = (weighIns[weighIns.length - 1] as any).weight;
       const totalLoss = firstWeight - lastWeight;
       const totalLossPercentage = (totalLoss / firstWeight) * 100;
       
