@@ -25,7 +25,7 @@ const CompetitionManagement: React.FC<CompetitionManagementProps> = ({
     watch,
   } = useForm<CompetitionSettings & { year: number }>();
 
-  const onSubmit = async (data: CompetitionSettings const onSubmit = async (data: CompetitionSettings & { year: number }) => { { year: number }) => {
+  const onSubmit = async (data: CompetitionSettings & { year: number }) => {
     console.log("NEW VERSION DEPLOYED - Competition creation with auto-generated dates");
     setLoading(true);
     try {
