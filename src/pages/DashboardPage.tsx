@@ -148,10 +148,14 @@ const DashboardPage: React.FC = () => {
                   </h3>
                 </div>
                 <div className="card-body">
-                  <PersonalProgressChart
-                    year={currentCompetition.year}
-                    userId={user?.uid || ''}
-                  />
+                  {user?.uid ? (
+                    <PersonalProgressChart
+                      year={currentCompetition.year}
+                      userId={user.uid}
+                    />
+                  ) : (
+                    <LoadingSpinner />
+                  )}
                 </div>
               </div>
 
