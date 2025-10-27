@@ -10,7 +10,6 @@ import LoadingSpinner from '../components/LoadingSpinner';
 import CompetitionManagement from '../components/admin/CompetitionManagement';
 import UserManagement from '../components/admin/UserManagement';
 import CompetitionStats from '../components/admin/CompetitionStats';
-import TestDataGenerator from '../components/admin/TestDataGenerator';
 
 const AdminPage: React.FC = () => {
   const { user } = useAuth();
@@ -120,9 +119,6 @@ const AdminPage: React.FC = () => {
 
         {/* Tab Content */}
         <div className="space-y-6">
-          {/* Test Data Generator */}
-          <TestDataGenerator competitions={competitions} />
-          
           {activeTab === 'competitions' && (
             <CompetitionManagement
               competitions={competitions}
