@@ -99,12 +99,12 @@ export class TestDataService {
           // Add delay between users
           await new Promise(resolve => setTimeout(resolve, 500));
           
-        } catch (error) {
+        } catch (error: any) {
           console.error(`❌ Error creating test user ${testUser.name}:`, error);
           console.error(`Error details:`, {
-            message: error.message,
-            code: error.code,
-            stack: error.stack
+            message: error?.message,
+            code: error?.code,
+            stack: error?.stack
           });
           // Continue with next user instead of stopping
         }
@@ -112,7 +112,7 @@ export class TestDataService {
       
       console.log(`🎊 Test data generation complete! Created ${this.TEST_USERS.length} users with 12 weeks of data each.`);
       
-    } catch (error) {
+    } catch (error: any) {
       console.error(`💥 Fatal error in generateTestUsers:`, error);
       throw error;
     }
