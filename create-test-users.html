@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Test Users - Weight Loss Challenge</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .description {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f0f0f0;
+            min-height: 50px;
+        }
+        .success {
+            color: #4CAF50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .log {
+            background: #f9f9f9;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Create Test Users</h1>
+        <p class="description">
+            This page will create 10 test users with realistic names and 12 weeks of weight loss data for the 2026 competition.
+            Make sure you're logged in as an admin before running this.
+        </p>
+        <button id="createBtn" onclick="createTestUsers()">Create 10 Test Users</button>
+        <button id="clearBtn" onclick="clearTestUsers()">Clear Test Users</button>
+        <div id="status"></div>
+        <div id="log" class="log" style="display: none;"></div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZG4SxwWExDzJnjs3wbWboAvkmbAJQYU8",
+            authDomain: "weight-loss-challenge-ap-6c2fb.firebaseapp.com",
+            projectId: "weight-loss-challenge-ap-6c2fb",
+            storageBucket: "weight-loss-challenge-ap-6c2fb.firebasestorage.app",
+            messagingSenderId: "886097951337",
+            appId: "1:886097951337:web:ce5725a0f62249366c80f8",
+            measurementId: "G-F9NNWH0SPH"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        const TEST_USERS = [
+            { name: 'Alex Johnson', startWeight: 220 },
+            { name: 'Sarah Williams', startWeight: 185 },
+            { name: 'Mike Chen', startWeight: 245 },
+            { name: 'Emma Davis', startWeight: 165 },
+            { name: 'David Rodriguez', startWeight: 280 },
+            { name: 'Lisa Thompson', startWeight: 195 },
+            { name: 'James Wilson', startWeight: 210 },
+            { name: 'Maria Garcia', startWeight: 175 },
+            { name: 'Chris Brown', startWeight: 230 },
+            { name: 'Jennifer Lee', startWeight: 190 }
+        ];
+
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            logDiv.style.display = 'block';
+            logDiv.innerHTML += new Date().toLocaleTimeString() + ': ' + message + '<br>';
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+
+        function setStatus(message, type = 'info') {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = message;
+            statusDiv.className = type === 'success' ? 'success' : type === 'error' ? 'error' : '';
+        }
+
+        async function createTestUsers() {
+            const createBtn = document.getElementById('createBtn');
+            createBtn.disabled = true;
+            log('Starting test user creation...');
+
+            try {
+                // Check if user is authenticated
+                const user = auth.currentUser;
+                if (!user) {
+                    setStatus('❌ You must be logged in to create test users', 'error');
+                    log('ERROR: Not authenticated');
+                    createBtn.disabled = false;
+                    return;
+                }
+
+                log('User authenticated: ' + user.email);
+
+                const year = 2026;
+
+                for (let i = 0; i < TEST_USERS.length; i++) {
+                    const testUser = TEST_USERS[i];
+                    const userId = `test-user-${i + 1}`;
+                    
+                    log(`Creating user ${i + 1}/${TEST_USERS.length}: ${testUser.name}`);
+
+                    // Create participant document
+                    const participantRef = db.collection('competitions').doc(year.toString())
+                        .collection('participants').doc(userId);
+                    
+                    await participantRef.set({
+                        userId,
+                        name: testUser.name,
+                        email: `test${i + 1}@example.com`,
+                        role: 'regular',
+                        joinedAt: firebase.firestore.FieldValue.serverTimestamp(),
+                        isTestUser: true
+                    });
+                    log(`✅ Participant document created: ${testUser.name}`);
+
+                    // Generate weigh-in data
+                    const baseWeight = testUser.startWeight;
+                    let currentWeight = baseWeight;
+
+                    for (let week = 1; week <= 12; week++) {
+                        const weeklyLoss = 0.5 + Math.random() * 1.5;
+                        currentWeight -= weeklyLoss;
+                        currentWeight += (Math.random() - 0.5) * 0.5;
+                        currentWeight = Math.max(currentWeight, baseWeight * 0.8);
+                        
+                        const weight = Math.round(currentWeight * 10) / 10;
+                        
+                        const weighInRef = participantRef.collection('weigh-ins').doc(week.toString());
+                        await weighInRef.set({
+                            weekNumber: week,
+                            weight,
+                            notes: `Test data - Week ${week}`,
+                            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                        });
+                    }
+
+                    log(`✅ Created ${testUser.name} with 12 weeks of data`);
+                }
+
+                setStatus(`🎉 Success! Created ${TEST_USERS.length} test users with 12 weeks of data each!`, 'success');
+                log('Test user creation complete!');
+
+            } catch (error) {
+                setStatus('❌ Error: ' + error.message, 'error');
+                log('ERROR: ' + error.message);
+                console.error(error);
+            }
+
+            createBtn.disabled = false;
+        }
+
+        async function clearTestUsers() {
+            const clearBtn = document.getElementById('clearBtn');
+            clearBtn.disabled = true;
+            log('Starting test user cleanup...');
+
+            try {
+                const year = 2026;
+                const participantsRef = db.collection('competitions').doc(year.toString())
+                    .collection('participants');
+                
+                const snapshot = await participantsRef.get();
+                let deleted = 0;
+
+                for (const doc of snapshot.docs) {
+                    const data = doc.data();
+                    if (data.isTestUser) {
+                        log(`Deleting test user: ${data.name}`);
+                        
+                        // Delete weigh-ins
+                        const weighInsSnapshot = await doc.ref.collection('weigh-ins').get();
+                        weighInsSnapshot.forEach(weighInDoc => {
+                            weighInDoc.ref.delete();
+                        });
+                        
+                        // Delete participant
+                        await doc.ref.delete();
+                        deleted++;
+                    }
+                }
+
+                setStatus(`✅ Deleted ${deleted} test users`, 'success');
+                log(`Cleanup complete. Deleted ${deleted} test users.`);
+
+            } catch (error) {
+                setStatus('❌ Error: ' + error.message, 'error');
+                log('ERROR: ' + error.message);
+                console.error(error);
+            }
+
+            clearBtn.disabled = false;
+        }
+    </script>
+</body>
+</html>
