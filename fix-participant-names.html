@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fix Participant Names</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 5px;
+            background: #f0f0f0;
+            min-height: 50px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Fix Participant Names</h1>
+    <button onclick="fixNames()">Fix All Participant Names</button>
+    <div id="status"></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZG4SxwWExDzJnjs3wbWboAvkmbAJQYU8",
+            authDomain: "weight-loss-challenge-ap-6c2fb.firebaseapp.com",
+            projectId: "weight-loss-challenge-ap-6c2fb",
+            storageBucket: "weight-loss-challenge-ap-6c2fb.firebasestorage.app",
+            messagingSenderId: "886097951337",
+            appId: "1:886097951337:web:ce5725a0f62249366c80f8",
+            measurementId: "G-F9NNWH0SPH"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        async function fixNames() {
+            const statusDiv = document.getElementById('status');
+            statusDiv.innerHTML = 'Starting...';
+            
+            try {
+                // Get all users
+                const usersSnapshot = await db.collection('users').get();
+                const users = {};
+                
+                usersSnapshot.docs.forEach(doc => {
+                    users[doc.id] = doc.data().displayName;
+                });
+                
+                console.log('Found users:', users);
+                
+                // Get all competitions
+                const competitionsSnapshot = await db.collection('competitions').get();
+                
+                for (const compDoc of competitionsSnapshot.docs) {
+                    const year = compDoc.id;
+                    console.log(`Processing competition ${year}`);
+                    
+                    // Get all participants
+                    const participantsSnapshot = await db.collection('competitions').doc(year)
+                        .collection('participants').get();
+                    
+                    for (const participantDoc of participantsSnapshot.docs) {
+                        const participantData = participantDoc.data();
+                        const userId = participantDoc.id;
+                        const correctName = users[userId] || 'Unknown User';
+                        
+                        if (participantData.name !== correctName) {
+                            console.log(`Updating ${userId}: "${participantData.name}" → "${correctName}"`);
+                            await db.collection('competitions').doc(year)
+                                .collection('participants').doc(userId)
+                                .update({ name: correctName });
+                        }
+                    }
+                }
+                
+                statusDiv.innerHTML = '✅ All participant names updated successfully!';
+            } catch (error) {
+                statusDiv.innerHTML = '❌ Error: ' + error.message;
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
