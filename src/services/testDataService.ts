@@ -137,7 +137,7 @@ export class TestDataService {
       
       try {
         await this.generateTestData(year, userId, displayName);
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Error generating test data for user ${userId}:`, error);
       }
       
