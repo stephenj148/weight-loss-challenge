@@ -328,6 +328,18 @@ export class CompetitionService {
   static async submitWeighIn(year: number, userId: string, weekNumber: number, weight: number, notes?: string): Promise<void> {
     console.log(`Submitting weigh-in: year=${year}, userId=${userId}, week=${weekNumber}, weight=${weight}`);
     
+    // Get user's display name from users collection
+    let displayName = 'Unknown User';
+    try {
+      const userDoc = await getDoc(doc(db, 'users', userId));
+      if (userDoc.exists()) {
+        displayName = userDoc.data().displayName || 'Unknown User';
+        console.log(`Found user display name: ${displayName}`);
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+    }
+    
     // Create the weigh-in document
     const weighInRef = doc(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins', weekNumber.toString());
     
@@ -342,14 +354,19 @@ export class CompetitionService {
     await setDoc(weighInRef, weighInData);
     console.log('Weigh-in saved successfully!');
     
+    // Count existing weigh-ins to get total
+    const weighInsRef = collection(db, 'competitions', year.toString(), 'participants', userId, 'weigh-ins');
+    const weighInsSnapshot = await getDocs(weighInsRef);
+    const totalWeighIns = weighInsSnapshot.docs.length;
+    
     // Also create/update the participant document
     const participantRef = doc(db, 'competitions', year.toString(), 'participants', userId);
     const participantData = {
       userId,
-      name: 'Unknown User', // Will be updated with actual user data
+      name: displayName,
       joinedAt: serverTimestamp(),
       lastWeighIn: serverTimestamp(),
-      totalWeighIns: 1, // This should be calculated properly
+      totalWeighIns,
     };
     
     console.log('Creating/updating participant document:', participantData);
