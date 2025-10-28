@@ -47,29 +47,30 @@ const UserManagement: React.FC<UserManagementProps> = ({ users, competitions, on
       // Get stats for each user individually, including users with no weigh-ins
       const statsPromises = users.map(async (user) => {
         console.log(`Getting stats for user: ${user.uid} (${user.displayName})`);
-        const userStats = await CompetitionService.getUserStats(activeCompetition.year, user.uid);
-        
-        // If no stats found, create a default entry for this user
-        if (!userStats) {
-          console.log(`No weigh-ins found for user ${user.uid}, creating default entry`);
-          return {
-            userId: user.uid,
-            displayName: user.displayName,
-            startWeight: 0,
-            currentWeight: 0,
-            totalWeightLoss: 0,
-            totalWeightLossPercentage: 0,
-            averageWeeklyLoss: 0,
-            weeksParticipated: 0,
-            totalWeighIns: 0,
-            lastWeighIn: undefined,
-            weighIns: []
-          };
-        } else {
-          // Add the user's display name to the stats
-          userStats.displayName = user.displayName;
-          return userStats;
-        }
+          const userStats = await CompetitionService.getUserStats(activeCompetition.year, user.uid);
+          
+          // If no stats found, create a default entry for this user
+          if (!userStats) {
+            console.log(`No weigh-ins found for user ${user.uid}, creating default entry`);
+            return {
+              userId: user.uid,
+              displayName: user.displayName || 'Unknown User',
+              startWeight: 0,
+              currentWeight: 0,
+              totalWeightLoss: 0,
+              totalWeightLossPercentage: 0,
+              averageWeeklyLoss: 0,
+              weeksParticipated: 0,
+              totalWeighIns: 0,
+              lastWeighIn: undefined,
+              weighIns: []
+            };
+          } else {
+            // IMPORTANT: Always use the user's actual displayName from the users array
+            // Don't trust the displayName from userStats (which comes from participant documents)
+            userStats.displayName = user.displayName || 'Unknown User';
+            return userStats;
+          }
       });
 
       const allStats = await Promise.all(statsPromises);
